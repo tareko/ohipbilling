@@ -1,0 +1,22 @@
+---
+# This task will install OhipBilling and update to git
+
+- name: Install OhipBilling dependencies
+  action: apt pkg={{ item }} state=present
+  with_items:
+   - wkhtmltopdf
+
+- name: Copy configuration files
+  copy: src=core.php dest=/vagrant/ohipbilling/app/config/core.php owner=www-data group=www-data mode=0600 force=no
+- copy: src=database.php dest=/vagrant/ohipbilling/app/config/database.php owner=www-data group=www-data mode=0600 force=no
+- copy: src=email.php dest=/vagrant/ohipbilling/app/config/email.php owner=www-data group=www-data mode=0600 force=no
+ 
+- name: Create database for OhipBilling
+  mysql_db: name=ohipbilling state=present
+- mysql_db: name=ohipbilling state=import target=/vagrant/ohipbilling/app/config/schema/ohipbilling.sql
+ 
+- name: Create database for testing
+  mysql_db: name=test state=present
+  
+- name: Create user for OhipBilling
+  mysql_user: name=ohipbilling password=ohipbilling priv=ohipbilling.*:ALL/test.*:ALL state=present
